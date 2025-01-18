@@ -16,16 +16,40 @@ db.init_app(app)
 
 @app.route('/')
 def index():
-    return make_response(
-        '<h1>Welcome to the pet directory!</h1>',
-        200
-    )
+    body = {'message': 'Welcome to the pet directory'}
+    return make_response(body, 200)
 
 
-@app.route('/demo_json')
+@app.route('/demo_json/')
 def demo_json():
-    pet_json = '{"id": 1, "name" : "Fido", "species" : "Dog"}'
-    return make_response(pet_json, 200)
+    pets = []
+    for pet in Pet.query.all():
+        pet_dict = {
+            'id': pet.id,
+            'name': pet.name,
+        }
+        pets.append(pet_dict)
+    body = {
+        'count': len(pets),
+        'pets': pets
+    }
+    return make_response(body, 200)
+
+@app.route('/pets/<int:id>/')
+def pet_by_id(id):
+    pet = Pet.query.filter(Pet.id == id).first()
+    if pet:
+        pet_dict = {
+            'id':pet.id,
+            'name':pet.name,
+            'species':pet.species
+        }
+        status = 200
+    else:
+        pet_dict = {'message': f'The Pet with id {id} was not found'}
+        status = 404
+    return make_response(pet_dict, status)
+
 
 
 if __name__ == '__main__':
